@@ -8,6 +8,7 @@
 - 81% of the dataset is empty
 - The classes are highly imbalanced: *0.58% failed.*
 
-The data are munged into a lower dimension utilizing Apache-Spark's DataFrame class. Each record is summarized by counts of outliers and the count of non null values.
+[The data are munged into a lower dimension utilizing Apache-Spark's DataFrame class. Each record is summarized by counts of outliers and the count of non null values. All of that is done with myMunge.py](myMunge.py)
+
 
 The munged data is then modeled with Spark Machine Learning package.
