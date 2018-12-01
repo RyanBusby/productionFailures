@@ -15,9 +15,9 @@ To easily run a toy example, change the first three lines under `if __name__ == 
 
 ```python
 if __name__ == '__main__':
-  sparkContext = ps.SparkContext('local[2]')
-  spark = ps.sql.SparkSession(sparkContext)
-  root = '../data/%s'
+    sparkContext = ps.SparkContext('local[2]')
+    spark = ps.sql.SparkSession(sparkContext)
+    root = '../data/%s'
 ```
 
 [Hadoop Docs](https://hadoop.apache.org/docs/r3.1.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Configuration) // [Spark docs](https://spark.apache.org/docs/2.4.0/spark-standalone.html#starting-a-cluster-manually)
