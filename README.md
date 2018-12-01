@@ -6,4 +6,4 @@
 
 [The data are munged into a lower dimension utilizing Apache-Spark's DataFrame class. Each record is summarized by counts of non null entries, the average of the row measures, that average squared, and the natural log of that average. All of that is done with myMunge.py](src/myMunge.py)
 
-The munged data is modeled with Spark Machine Learning package.
+[The munged data is modeled with Spark Machine Learning package, and predictions are made on the non labeled data and loaded into hdfs.](src/fitLR.py)
