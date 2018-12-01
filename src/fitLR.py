@@ -72,13 +72,33 @@ def make_save_preds(model, test_path):
     date_name = str(dt).replace(':', '_')
     preds.write.csv('%s' % root % date_name + '_PREDS.csv', header=True)
 
-if __name__ == '__main__':
-    sparkContext = ps.SparkContext(master='spark://ryans-macbook:7077')
-    spark = ps.sql.SparkSession(sparkContext)
-
+def launchSpark(local=False):
+    if local:
+        root = '../data/%s'
+        sparkContext = ps.SparkContext('local[1]')
+        spark = ps.sql.SparkSession(sparkContext)
+        return spark, root
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
+    sparkContext = ps.SparkContext(\
+    master = 'spark://ryans-macbook:7077')
+    spark = ps.sql.SparkSession(sparkContext)
+    return spark, root
 
-    train_fname = '11_40_17.044900_toyTrain.csv'
-    test_fname = '11_40_18.635476_toyTest.csv'
+def get_ans():
+    islocal = None
+    while not islocal:
+        islocal =\
+        raw_input('launch locally? 1-yes, 0-no: ')
+        if islocal != '1' and islocal != '0':
+            islocal = None
+            print('enter 0 for no 1 for yes'.upper())
+    return bool(islocal)
+
+if __name__ == '__main__':
+    isloc = get_ans()
+    spark, root = launchSpark(local=isloc)
+
+    train_fname = ''
+    test_fname = ''
 
     run(spark, root, train_fname, test_fname)

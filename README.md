@@ -11,13 +11,13 @@ A column is added that indicates outliers, which is an example of aggregation al
 
 The munged data is modeled with Spark Machine Learning package, predictions are made on the test data, then loaded into hdfs. Those steps execute in [`src/fitLR.py`](src/fitLR.py).
 
-To easily run a toy example, change the first three lines under `if __name__ == '__main__':` in both [`src/myMunge.py`](src/myMunge.py) and [`src/fitLR.py`](src/fitLR.py) to:
+##### To easily run a toy example:
+1. run myMunge.py, enter 1 when prompted to launch locally.
 
-```python
-if __name__ == '__main__':
-    sparkContext = ps.SparkContext('local[2]')
-    spark = ps.sql.SparkSession(sparkContext)
-    root = '../data/%s'
-```
+2. copy the name of the newly created folder (not the path) within the data directory to the train_fname and test_fname variables in src/fitLR.py, accordingly.
+
+3. run fitLR.py, enter 1 when prompted to launch locally.
+
+4. predictions will populate in the data directory of this repo
 
 [Hadoop Docs](https://hadoop.apache.org/docs/r3.1.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Configuration) // [Spark docs](https://spark.apache.org/docs/2.4.0/spark-standalone.html#starting-a-cluster-manually)

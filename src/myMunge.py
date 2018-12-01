@@ -1,6 +1,8 @@
+import os
+import platform
 import pyspark as ps
-from datetime import datetime
 from math import log1p
+from datetime import datetime
 from pyspark.sql.functions import when
 
 def munge(path, spark):
@@ -95,23 +97,38 @@ def save_munged(X, file_name):
     print('saving data >>> '.upper() + munged_path)
     X.write.csv(munged_path, header=True)
 
-if __name__ == '__main__':
-    sparkContext = ps.SparkContext(master='spark://ryans-macbook:7077')
-    spark = ps.sql.SparkSession(sparkContext)
-
+def launchSpark(local=False):
+    if local:
+        root = '../data/%s'
+        sparkContext = ps.SparkContext('local[1]')
+        spark = ps.sql.SparkSession(sparkContext)
+        return spark, root
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
+    sparkContext = ps.SparkContext(\
+    master = 'spark://ryans-macbook:7077')
+    spark = ps.sql.SparkSession(sparkContext)
+    return spark, root
 
-    # train_file_name = 'train_numeric.csv'
-    # train_path = root % train_file_name
-    # X = munge(train_path, spark)
-    # X.show()
-    # save_munged(X, train_file_name)
-    #
-    # test_file_name = 'test_numeric.csv'
-    # test_path = root % test_file_name
-    # X = mungeNoLabel(test_path, spark)
-    # X.show()
-    # save_munged(X, test_file_name)
+def get_ans():
+    islocal = None
+    while not islocal:
+        islocal =\
+        raw_input('launch locally? 1-yes, 0-no: ')
+        if islocal != '1' and islocal != '0':
+            islocal = None
+            print('enter 0 for no 1 for yes'.upper())
+    return bool(islocal)
+
+def showVersions():
+    print('Python Version: '+platform.python_version())
+    print('PySpark Version: '+ps.__version__)
+    os.system('java -version')
+    os.system('scala -version')
+
+if __name__ == '__main__':
+    showVersions()
+    isloc = get_ans()
+    spark, root = launchSpark(local=isloc)
 
     train_file_name = 'toyTrain.csv'
     train_path = root % train_file_name
@@ -124,3 +141,18 @@ if __name__ == '__main__':
     X = mungeNoLabel(test_path, spark)
     X.show()
     save_munged(X, test_file_name)
+
+    '''
+    larger dataset needs a bigger cluster to execute
+    '''
+    # train_file_name = 'train_numeric.csv'
+    # train_path = root % train_file_name
+    # X = munge(train_path, spark)
+    # X.show()
+    # save_munged(X, train_file_name)
+    #
+    # test_file_name = 'test_numeric.csv'
+    # test_path = root % test_file_name
+    # X = mungeNoLabel(test_path, spark)
+    # X.show()
+    # save_munged(X, test_file_name)
