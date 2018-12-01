@@ -2,12 +2,8 @@
 
 [<img src="img/logo.png" style="width: 5px;"/>](https://www.kaggle.com/c/bosch-production-line-performance/data) ↖  __the data__
 
-#### The goal is to predict which parts will fail quality control
-- The data are measurements related to parts as they move through production lines.
+#### The goal of the competition is to predict which parts will fail quality control, my goal is to utilize the hadoop ecosystem to handle a large datasets and perform machine learning.
 
-- 81% of the dataset is empty - of the roughly one million rows, on average each row has
-- The classes are highly imbalanced: *0.58% failed.*
-
-[The data are munged into a lower dimension utilizing Apache-Spark's DataFrame class. Each record is summarized by counts of outliers and the count of non null values. All of that is done with myMunge.py](src/myMunge.py)
+[The data are munged into a lower dimension utilizing Apache-Spark's DataFrame class. Each record is summarized by counts of non null entries, the average of the row measures, that average squared, and the natural log of that average. All of that is done with myMunge.py](src/myMunge.py)
 
 The munged data is modeled with Spark Machine Learning package.
