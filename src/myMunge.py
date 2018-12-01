@@ -1,69 +1,50 @@
 import pyspark as ps
-from tqdm import tqdm
-from pyspark.sql.functions import when
 from datetime import datetime
+from math import log1p
+from pyspark.sql.functions import when
 
-def MungeNoLabel(path, spark):
+def munge(path, spark):
     df = spark.read.csv(path, header=True, inferSchema=True)
-
-    print('counting observations'.upper())
-    num_obs = df.rdd.map(lambda x:(x[0], counts(x, label=False)))\
-    .toDF(['ii','Counts'])
+    print('aggregating row'.upper())
+    df = df.rdd.map(rowaggs).toDF()
 
     print('labeling outliers'.upper())
-    df = multi_nameOuts(df, 1.5, label=False)(df)
+    df = multi_nameOuts(df, 1.25)(df)
+    df= df.rdd.map(lambda x:(x[0],x[1],x[2],x[3],sum(x[5:]),x[4]))\
+    .toDF(['msrs', 'avg', 'avg2', 'ln', 'outs', 'Response'])
 
-    print('summing outliers'.upper())
-    df = df.rdd.map(lambda x:(x[0],sum(x[1:]))).toDF(['Id','Outliers'])
-
-    print('joining'.upper())
-    df = df.join(num_obs, df.Id == num_obs.ii, 'left')\
-    .select('Id','Outliers', 'Counts')
-
-    cols = ['Id','Outliers', 'Obs', 'Outs']
-    df = df.rdd.map(lambda x:(x[0],x[1],x[2][0],x[2][1])).toDF(cols)
-
-    return df
-
-def Munge(path, spark):
-    df = spark.read.csv(path, header=True, inferSchema=True)
-
-    print('counting observations'.upper())
-    num_obs = df.rdd.map(lambda x:(x[0], counts(x), x[-1]))\
-    .toDF(['ii','Counts', 'Response'])
-
-    print('labeling outliers'.upper())
-    df = multi_nameOuts(df,1.5)(df)
-
-    print('summing outliers'.upper())
-    df = df.rdd.map(lambda x:(x[0],sum(x[1:-1]))).toDF(['Id','Outliers'])
-
-    print('joining'.upper())
-    df = df.join(num_obs, df.Id == num_obs.ii, 'left')\
-    .select('Outliers', 'Counts', 'Response')
-
-    cols = ['Outliers', 'Obs', 'Outs', 'Response']
-    df = df.rdd.map(lambda x:(x[0],x[1][0],x[1][1],x[2])).toDF(cols)
-
-    print('balancing classes'.upper())
     df = balance_classes(df)
 
     return df
 
-def counts(x, label=True):
-    obs, outs = 0, 0
-    end = -1
-    if not label:
-        end = None
-    for xx in x[1:end]:
-        if xx:
-            obs += 1
-            if xx > .25 or xx < -.25:
-                outs += 1
-    return obs, outs
+def rowaggs(x):
+    r = filter(None, x[1:-1])
+    avrg = 0
+    if len(r) != 0:
+        avrg = sum(r)/len(r)
+    return len(r), avrg, avrg**2, log1p(avrg), x[-1]
+
+def mungeNoLabel(path, spark):
+    df = spark.read.csv(path, header=True, inferSchema=True)
+    print('aggregating row'.upper())
+    df = df.rdd.map(rowaggsNoLabel).toDF()
+
+    print('labeling outliers'.upper())
+    df = multi_nameOuts(df, 1.25, label=False)(df)
+    df= df.rdd.map(lambda x:(x[0],x[1],x[2],x[3],x[4],sum(x[5:8])))\
+    .toDF(['Id', 'msrs', 'avg', 'avg2', 'ln', 'outs'])
+
+    return df
+
+def rowaggsNoLabel(x):
+    r = filter(None, x[1:])
+    avrg = 0
+    if len(r) != 0:
+        avrg = sum(r)/len(r)
+    return x[0], len(r), avrg, avrg**2, log1p(avrg)
 
 def nameOuts(df, col_name, iqrx):
-    quants = df.approxQuantile([col_name],[.25,.75],.5)
+    quants = df.approxQuantile([col_name],[.25,.75],0)
     q1, q3 = quants[0][0], quants[0][1]
     iqr = q3 - q1
     lb = q1 - iqrx * iqr
@@ -76,9 +57,9 @@ def multi_nameOuts(df, iqrx, label=True):
     if not label:
         end = None
     def inner(dataframe):
-        for col_name in tqdm(df.columns[1:end]):
-            dataframe = dataframe.withColumn(col_name,\
-                               nameOuts(df, col_name, iqrx))
+        for col_name in df.columns[1:end]:
+            dataframe = dataframe\
+            .withColumn('%s_ISOUT'%col_name,nameOuts(df, col_name, iqrx))
         return dataframe
     return inner
 
@@ -119,17 +100,27 @@ if __name__ == '__main__':
     spark = ps.sql.SparkSession(sparkContext)
 
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
-    # train_file_name = 'toyTrain.csv'
+
+    # train_file_name = 'train_numeric.csv'
     # train_path = root % train_file_name
-    # X = Munge(train_path, spark)
+    # X = munge(train_path, spark)
+    # X.show()
     # save_munged(X, train_file_name)
     #
-    # test_file_name = 'toyTest.csv'
+    # test_file_name = 'test_numeric.csv'
     # test_path = root % test_file_name
-    # X = MungeNoLabel(test_path, spark)
+    # X = mungeNoLabel(test_path, spark)
+    # X.show()
     # save_munged(X, test_file_name)
 
-    test_file_name = 'test_numeric.csv'
+    train_file_name = 'toyTrain.csv'
+    train_path = root % train_file_name
+    X = munge(train_path, spark)
+    X.show()
+    save_munged(X, train_file_name)
+
+    test_file_name = 'toyTest.csv'
     test_path = root % test_file_name
-    X = MungeNoLabel(test_path, spark)
+    X = mungeNoLabel(test_path, spark)
+    X.show()
     save_munged(X, test_file_name)

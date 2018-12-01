@@ -3,7 +3,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
-from myMunge import *
+from datetime import datetime
 
 def run(spark, root, train_fname, test_fname):
     train_path = root % train_fname
@@ -15,18 +15,19 @@ def run(spark, root, train_fname, test_fname):
 def load_data(path, persisted=True, test=False):
     if not persisted:
         if test:
-            df = myMunge(path, spark, labeled=False)
+            df = Munge(path, spark, labeled=False)
             return df
-        df = myMunge(path, spark)
+        df = Munge(path, spark)
         return df
     else:
         df = spark.read.csv(path, header=True, inferSchema=True)
         return df
 
 def vectorize(df, test=False):
-    numericCols = ['Obs', 'Outs', 'Outliers']
+    numericCols = ['msrs', 'avg', 'avg2', 'ln', 'outs']
     assembler = VectorAssembler(inputCols=numericCols,\
-                                outputCol='features')
+                                outputCol='features',\
+                                handleInvalid='keep')
 
     stages = [assembler]
     pipeline = Pipeline(stages=stages)
@@ -34,7 +35,7 @@ def vectorize(df, test=False):
     cols = ['features', 'Response']
     if test:
         cols = ['Id','features']
-    df = pipelineModel.transform(df)
+    df = pipelineModel.transform(df).select(cols)
     return df
 
 def trainModel(spark, train_path):
@@ -65,7 +66,8 @@ def validate_save_model(model, X_test):
 def make_save_preds(model, test_path):
     test_df = load_data(test_path)
     test_df = vectorize(test_df, test=True)
-    preds = model.transform(test_df).select('Id', 'prediction')
+    preds = model.transform(test_df)\
+    .selectExpr('Id', 'CAST(prediction as INT) as Response')
     dt = datetime.now().time()
     date_name = str(dt).replace(':', '_')
     preds.write.csv('%s' % root % date_name + '_PREDS.csv', header=True)
@@ -75,7 +77,8 @@ if __name__ == '__main__':
     spark = ps.sql.SparkSession(sparkContext)
 
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
-    train_fname = '13_51_09.975343_train_numeric.csv'
-    test_fname = ''
+
+    train_fname = '11_40_17.044900_toyTrain.csv'
+    test_fname = '11_40_18.635476_toyTest.csv'
 
     run(spark, root, train_fname, test_fname)
