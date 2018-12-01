@@ -1,4 +1,4 @@
-# __Binary Classification__
+# __Binary Classification on a Cluster__
 
 [<img src="img/logo.png" style="width: 5px;"/>](https://www.kaggle.com/c/bosch-production-line-performance/data) ↖  __the data__
 
