@@ -19,5 +19,3 @@ The munged data is modeled with Spark Machine Learning package, predictions are 
 3. run fitLR.py, enter 1 when prompted to launch locally.
 
 4. predictions will populate in the data directory of this repo
-
-[Hadoop Docs](https://hadoop.apache.org/docs/r3.1.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Configuration) // [Spark docs](https://spark.apache.org/docs/2.4.0/spark-standalone.html#starting-a-cluster-manually)
