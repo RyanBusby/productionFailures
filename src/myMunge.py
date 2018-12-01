@@ -47,6 +47,7 @@ def myMunge(path, spark):
 
     print('balancing classes'.upper())
     df = balance_classes(df)
+
     return df
 
 def counts(x, label=True):
@@ -82,30 +83,31 @@ def multi_nameOuts(df, iqrx, label=True):
     return inner
 
 def balance_classes(df):
+    # OVERSAMPLING SPECIFICALLY TO ADDRESS CLASS IMBALANCE OF BOSCHE DATA
     '''
-    OVERSAMPLING SPECIFICALLY TO ADDRESS CLASS IMBALANCE OF BOSCHE DATA
-
     fraction argument in .sample() misbehaves
     if it didn't should be able to return without while loop
     '''
     c0 = df.filter(df.Response==0).count()
     c1 = df.filter(df.Response==1).count()
-    biggerClass = max(c0, c1)
-
-    x = (float(c0)-c1)/c1
-    if x < .25: # yea but why though?
+    diff = float(abs(c0 - c1))
+    x = diff / min(c0, c1)
+    f_label = 0
+    if c0 > c1:
+        f_label = 1
+    if x < .25:
         return df
     else:
-        while c1+df.filter(df.Response==1)\
-        .sample(True, x, 13).count() < .9*c0:
-            x += x/2 # research why fraction argument doesn't act right
-    return df.union(df.filter(df.Response==1).sample(True,x,42))
+        while min(c1, c0)+df.filter(df.Response==f_label)\
+        .sample(True, x, 42).count() < .9*c0:
+            x += x/2
+    return df.union(df.filter(df.Response==f_label).sample(True,x,42))
 
 if __name__ == '__main__':
     sparkContext = ps.SparkContext(master='spark://ryans-macbook:7077')
     spark = ps.sql.SparkSession(sparkContext)
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
-    file_name = 'test_numeric.csv'
+    file_name = 'dumData1.csv'
     path = root % file_name
 
     X = myMunge(path, spark)
