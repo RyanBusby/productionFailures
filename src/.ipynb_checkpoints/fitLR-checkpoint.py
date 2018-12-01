@@ -73,9 +73,9 @@ def make_save_preds(model, test_path):
 if __name__ == '__main__':
     sparkContext = ps.SparkContext(master='spark://ryans-macbook:7077')
     spark = ps.sql.SparkSession(sparkContext)
-
+    
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
-    train_fname = '13_51_09.975343_train_numeric.csv'
-    test_fname = ''
+    train_fname = '19_44_43.880996_toyTrain.csv'
+    test_fname = '19_44_48.470953_toyTest.csv'
 
     run(spark, root, train_fname, test_fname)

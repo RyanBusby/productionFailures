@@ -119,17 +119,12 @@ if __name__ == '__main__':
     spark = ps.sql.SparkSession(sparkContext)
 
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
-    # train_file_name = 'toyTrain.csv'
-    # train_path = root % train_file_name
-    # X = myMunge(train_path, spark)
-    # save_munged(X, train_file_name)
-    #
-    # test_file_name = 'toyTest.csv'
-    # test_path = root % test_file_name
-    # X = myMungeNoLabel(test_path, spark)
-    # save_munged(X, test_file_name)
+    train_file_name = 'toyTrain.csv'
+    train_path = root % train_file_name
+    X = myMunge(train_path, spark)
+    save_munged(X, train_file_name)
 
-    test_file_name = 'test_numeric.csv'
+    test_file_name = 'toyTest.csv'
     test_path = root % test_file_name
     X = myMungeNoLabel(test_path, spark)
     save_munged(X, test_file_name)
