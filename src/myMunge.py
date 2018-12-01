@@ -3,7 +3,7 @@ from tqdm import tqdm
 from pyspark.sql.functions import when
 from datetime import datetime
 
-def myMungeNoLabel(path, spark):
+def MungeNoLabel(path, spark):
     df = spark.read.csv(path, header=True, inferSchema=True)
 
     print('counting observations'.upper())
@@ -25,7 +25,7 @@ def myMungeNoLabel(path, spark):
 
     return df
 
-def myMunge(path, spark):
+def Munge(path, spark):
     df = spark.read.csv(path, header=True, inferSchema=True)
 
     print('counting observations'.upper())
@@ -121,15 +121,15 @@ if __name__ == '__main__':
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
     # train_file_name = 'toyTrain.csv'
     # train_path = root % train_file_name
-    # X = myMunge(train_path, spark)
+    # X = Munge(train_path, spark)
     # save_munged(X, train_file_name)
     #
     # test_file_name = 'toyTest.csv'
     # test_path = root % test_file_name
-    # X = myMungeNoLabel(test_path, spark)
+    # X = MungeNoLabel(test_path, spark)
     # save_munged(X, test_file_name)
 
     test_file_name = 'test_numeric.csv'
     test_path = root % test_file_name
-    X = myMungeNoLabel(test_path, spark)
+    X = MungeNoLabel(test_path, spark)
     save_munged(X, test_file_name)
