@@ -6,6 +6,16 @@
 
 The data are munged into a lower dimension utilizing Apache-Spark's DataFrame class. Each row is summarized by counts of non-null entries, the average of the row, that average squared, and the natural log of that average. Those are examples of aggregating along the columns.
 
-Then there is a column added in that indicates outliers, which is an example of aggregation along the rows. All of that is done with [src/myMunge.py](src/myMunge.py).
+Then there is a column added in that indicates outliers, which is an example of aggregation along the rows. All of that is done with [`src/myMunge.py`](src/myMunge.py).
 
-The munged data is modeled with Spark Machine Learning package, and predictions are made on the non labeled data and loaded into hdfs. Those steps execute in [src/fitLR.py](src/fitLR.py).
+The munged data is modeled with Spark Machine Learning package, and predictions are made on the non labeled data and loaded into hdfs. Those steps execute in [`src/fitLR.py`](src/fitLR.py).
+
+Can run toy examples locally very quickly, simply change the first three lines under `if __name__ == '__main__':` in both [`src/myMunge.py`](src/myMunge.py) and [`src/fitLR.py`](src/fitLR.py) to:
+```python
+if __name__ == '__main__':
+  sparkContext = ps.SparkContext('local[2]')
+  spark = ps.sql.SparkSession(sparkContext)
+  root = '../data/%s'
+```
+
+[Hadoop Docs](https://hadoop.apache.org/docs/r3.1.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Configuration) // [Spark docs](https://spark.apache.org/docs/2.4.0/spark-standalone.html#starting-a-cluster-manually)
