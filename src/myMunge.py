@@ -7,14 +7,20 @@ from pyspark.sql.functions import when
 
 def munge(path, spark):
     df = spark.read.csv(path, header=True, inferSchema=True)
-    print('aggregating row'.upper())
-    df = df.rdd.map(rowaggs).toDF()
+
+    print('aggregating columns'.upper())
+    cols = ['cntX', 'avgX', 'avg2X', '1plogavgX', df.columns[-1]]
+    df = df.rdd.map(rowaggs).toDF(cols)
 
     print('labeling outliers'.upper())
-    df = multi_nameOuts(df, 1.25)(df)
-    df= df.rdd.map(lambda x:(x[0],x[1],x[2],x[3],sum(x[5:]),x[4]))\
-    .toDF(['msrs', 'avg', 'avg2', 'ln', 'outs', 'Response'])
+    for col_name in df.columns[1:-1]:
+        df = df.withColumn('%s_O' % col_name, nameOuts(df,col_name, 1.5))
 
+    cols.insert(4, 'O')
+    df= df.rdd.map(lambda x:(x[0], x[1], x[2], x[3], sum(x[5:]), x[4]))\
+    .toDF(cols)
+
+    print('balancing classes'.upper())
     df = balance_classes(df)
 
     return df
@@ -28,14 +34,19 @@ def rowaggs(x):
 
 def mungeNoLabel(path, spark):
     df = spark.read.csv(path, header=True, inferSchema=True)
+
     print('aggregating row'.upper())
-    df = df.rdd.map(rowaggsNoLabel).toDF()
+    cols = [df.columns[0], 'cntX', 'avgX', 'avg2X', '1plogavgX']
+    df = df.rdd.map(rowaggsNoLabel).toDF(cols)
 
     print('labeling outliers'.upper())
-    df = multi_nameOuts(df, 1.25, label=False)(df)
-    df= df.rdd.map(lambda x:(x[0],x[1],x[2],x[3],x[4],sum(x[5:8])))\
-    .toDF(['Id', 'msrs', 'avg', 'avg2', 'ln', 'outs'])
-    
+    for col_name in df.columns[2:]:
+        df = df.withColumn('%s_O' % col_name, nameOuts(df,col_name, 1.5))
+
+    cols.append('O')
+    df = df.rdd.map(lambda x:(x[0], x[1], x[2], x[3], x[4],sum(x[5:8])))\
+    .toDF(cols)
+
     return df
 
 def rowaggsNoLabel(x):
@@ -55,13 +66,15 @@ def nameOuts(df, col_name, iqrx):
 
 def multi_nameOuts(df, iqrx, label=True):
     # USE approxQuantile() TO CALCULATE THE IQR PER COLUMN AND LABEL OUTS
+    start = 1
     end = -1
     if not label:
+        start = 2
         end = None
     def inner(dataframe):
-        for col_name in df.columns[1:end]:
+        for col_name in df.columns[start:end]:
             dataframe = dataframe\
-            .withColumn('%s_ISOUT'%col_name,nameOuts(df, col_name, iqrx))
+            .withColumn('%s_O' % col_name, nameOuts(col_name, iqrx))
         return dataframe
     return inner
 
@@ -90,7 +103,7 @@ def balance_classes(df):
             x += x/2
     return df.union(df.filter(df.Response==f_label).sample(True,x,42))
 
-def save_munged(X, file_name):
+def save_munged(X, file_name, root):
     dt = datetime.now().time()
     munged_file_name = str(dt).replace(':', '_') + '_' + file_name
     munged_path = root % munged_file_name
@@ -99,7 +112,8 @@ def save_munged(X, file_name):
 
 def launchSpark(local=False):
     if local:
-        root = '../data/%s'
+        workdir = os.path.dirname(os.path.abspath(__file__))
+        root = os.path.join(workdir ,'..','data', '%s')
         sparkContext = ps.SparkContext('local[1]')
         spark = ps.sql.SparkSession(sparkContext)
         return spark, root
@@ -132,15 +146,16 @@ if __name__ == '__main__':
 
     train_file_name = 'toyTrain.csv'
     train_path = root % train_file_name
+
     X = munge(train_path, spark)
     X.show()
-    save_munged(X, train_file_name)
+    save_munged(X, train_file_name, root)
 
     test_file_name = 'toyTest.csv'
     test_path = root % test_file_name
     X = mungeNoLabel(test_path, spark)
     X.show()
-    save_munged(X, test_file_name)
+    save_munged(X, test_file_name,root)
 
     '''
     larger dataset needs a bigger cluster to execute

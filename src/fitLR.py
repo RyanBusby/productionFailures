@@ -1,3 +1,4 @@
+import os
 import pyspark as ps
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import VectorAssembler
@@ -24,7 +25,7 @@ def load_data(path, persisted=True, test=False):
         return df
 
 def vectorize(df, test=False):
-    numericCols = ['msrs', 'avg', 'avg2', 'ln', 'outs']
+    numericCols = ['cntX', 'avgX', 'avg2X', '1plogavgX', 'O']
     assembler = VectorAssembler(inputCols=numericCols,\
                                 outputCol='features',\
                                 handleInvalid='keep')
@@ -74,7 +75,8 @@ def make_save_preds(model, test_path):
 
 def launchSpark(local=False):
     if local:
-        root = '../data/%s'
+        workdir = os.path.dirname(os.path.abspath(__file__))
+        root = os.path.join(workdir ,'..','data', '%s')
         sparkContext = ps.SparkContext('local[1]')
         spark = ps.sql.SparkSession(sparkContext)
         return spark, root
@@ -84,7 +86,7 @@ def launchSpark(local=False):
     spark = ps.sql.SparkSession(sparkContext)
     return spark, root
 
-def get_ans():
+def get_ans(hdfsnn, smaster):
     islocal = None
     while not islocal:
         islocal =\
@@ -92,13 +94,19 @@ def get_ans():
         if islocal != '1' and islocal != '0':
             islocal = None
             print('enter 0 for no 1 for yes'.upper())
-    return bool(islocal)
+    h_ans = raw_input('HDFS Namenode: %s\n1-Continue, 0-Rename' %\
+    hdfsnamenode)
+    raw_input('Spark Master: %s' % sparkmaster)
+    return bool(islocal), hdfsnamenode, sparkmaster
 
 if __name__ == '__main__':
-    isloc = get_ans()
+    hdfsnamenode = 'hfds://ryans-macbook:9000/%'
+    sparkmaster = 'spark://ryans-macbook:7077'
+
+    isloc, hdfsnamenode, smaster = get_ans(hdfsnamenode, sparkmaster)
     spark, root = launchSpark(local=isloc)
 
-    train_fname = ''
-    test_fname = ''
+    train_fname = '20_05_35.624604_toyTrain.csv'
+    test_fname = '20_05_36.788411_toyTest.csv'
 
     run(spark, root, train_fname, test_fname)
