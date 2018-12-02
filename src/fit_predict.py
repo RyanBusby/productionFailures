@@ -8,6 +8,7 @@ from myLib import *
 from munge import *
 
 def run(root, smaster, train_fname, test_fname, ask):
+    makeDirs()
     f = os.path.abspath(__file__)
     root, train_path, test_path, spark = \
     configure(root, smaster, train_fname, test_fname, f, ask)

@@ -4,6 +4,7 @@ from pyspark.sql.functions import when
 from myLib import *
 
 def run(root, smaster, train_file_name, test_file_name, ask):
+    makeDirs()
     f = os.path.abspath(__file__)
     root, train_path, test_path, spark = \
     configure(root, smaster, train_file_name, test_file_name, f, ask)

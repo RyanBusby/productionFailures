@@ -88,7 +88,7 @@ def launchSpark(smaster):
     sc.addFile('myLib.py')
     spark = ps.sql.SparkSession(sc)
     return spark
-#toy
+
 def make_toy_data(type):
     if type == 'train':
         cols = ['Id','f1','f2','f3','Response']
@@ -112,3 +112,13 @@ def make_toy_data(type):
             writer.writerow(dict([idx, f1, f2, f3, lbl]))
         elif type == 'test':
             writer.writerow(dict([idx, f1, f2, f3]))
+
+def makeDirs():
+    dataDir = os.path.join(os.getcwd(), __file__, '..', '..', 'data')
+    dataDir = os.path.abspath(dataDir)
+    if not os.path.isdir(dataDir):
+        os.makedirs(dataDir)
+    modsDir = os.path.join(os.getcwd(), __file__, '..', '..', 'models')
+    modsDir = os.path.abspath(modsDir)
+    if not os.path.isdir(modsDir):
+        os.makedirs(modsDir)
