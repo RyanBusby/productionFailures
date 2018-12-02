@@ -35,7 +35,7 @@ def mungeNoLabel(path, spark):
     df = multi_nameOuts(df, 1.25, label=False)(df)
     df= df.rdd.map(lambda x:(x[0],x[1],x[2],x[3],x[4],sum(x[5:8])))\
     .toDF(['Id', 'msrs', 'avg', 'avg2', 'ln', 'outs'])
-
+    
     return df
 
 def rowaggsNoLabel(x):

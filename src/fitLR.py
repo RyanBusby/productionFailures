@@ -34,7 +34,7 @@ def vectorize(df, test=False):
     pipelineModel = pipeline.fit(df)
     cols = ['features', 'Response']
     if test:
-        cols = ['Id','features']
+        cols = ['Id', 'features']
     df = pipelineModel.transform(df).select(cols)
     return df
 
