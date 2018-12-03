@@ -88,7 +88,7 @@ if __name__ == '__main__':
     ask = True
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
     smaster = 'spark://ryans-macbook:7077'
-    train_fname = '17_05_48.211076_toyTrain.csv'
-    test_fname = '17_05_49.245497_toyTest.csv'
+    train_fname = ''
+    test_fname = ''
 
     run(root, smaster, train_fname, test_fname, ask)

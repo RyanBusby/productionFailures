@@ -16,10 +16,11 @@ def run(root, smaster, train_fname, test_fname, ask):
 
 if __name__ == '__main__':
 
-    root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
-    smaster = 'spark://ryans-macbook:7077'
+    root = os.path.abspath(\
+    os.path.join(os.getcwd(), __file__, '..', '..', 'data', '%s'))
+    smaster = ''
     train_fname = 'toyTrain.csv'
     test_fname = 'toyTest.csv'
-    ask = True
+    ask = False
 
     run(root, smaster, train_fname, test_fname, ask)

@@ -13,7 +13,7 @@ def configure(root, smaster, train_file_name, test_file_name, f, ask):
         test_path = root % test_file_name
         acceptConf(isLocal, root, smaster, f, train_path, test_path, ask)
     else:
-        isLocal = False
+        isLocal = True
         train_path = root % train_file_name
         test_path = root % test_file_name
         acceptConf(isLocal, root, smaster, f, train_path, test_path, ask)
