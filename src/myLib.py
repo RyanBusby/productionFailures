@@ -105,10 +105,11 @@ def make_toy_data(type):
         return
     writer = csv.DictWriter(open(save_path, 'w'),fieldnames=cols)
     writer.writerow(dict(zip(cols, cols)))
-    for i in range(0, 100):
+    for i in range(150):
         idx = ('Id', i)
         f1  = ('f1', random.choice([None, random.gauss(0,1)]))
-        f2  = ('f2', random.choice([None, random.gauss(0,1)]))
+        f2  = ('f2', random.choice([random.gauss(0,1),\
+         random.gauss(0,1)])) # empty rows don't work well
         f3  = ('f3', random.choice([None, random.gauss(0,1)]))
         if type == 'train':
             lbl = ('Response', random.randint(0,1))
