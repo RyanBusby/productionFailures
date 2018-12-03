@@ -85,10 +85,10 @@ def make_save_preds(spark, root, test_path, model, model_path, persisted=True):
     preds.write.csv('%s' % root % date_name + '_PREDS.csv', header=True)
 
 if __name__ == '__main__':
-    ask = False
+    ask = True
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
     smaster = 'spark://ryans-macbook:7077'
-    train_fname = '12_51_48.275807_toyTrain.csv'
-    test_fname = '12_51_49.871649_toyTest.csv'
+    train_fname = '17_05_48.211076_toyTrain.csv'
+    test_fname = '17_05_49.245497_toyTest.csv'
 
     run(root, smaster, train_fname, test_fname, ask)

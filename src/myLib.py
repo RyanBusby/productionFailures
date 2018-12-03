@@ -27,7 +27,8 @@ def get_ans(root, smaster):
         if cpus == 0:
             cpus == 1
         workdir = os.getcwd()
-        root = os.path.abspath(os.path.join(workdir ,'..','data', '%s'))
+        root = os.path.abspath(\
+        os.path.join(workdir, __file__, '..', '..', 'data', '%s'))
         smaster = 'local[%s]' % cpus
         return root, smaster, isLocal
     return root, smaster, isLocal

@@ -123,7 +123,7 @@ def save_munged(X, file_name, root):
     X.write.csv(munged_path, header=True)
 
 if __name__ == '__main__':
-    ask = False
+    ask = True
     root = 'hdfs://ryans-macbook:9000/user/ryan/%s'
     smaster = 'spark://ryans-macbook:7077'
     train_fname = 'toyTrain.csv'
