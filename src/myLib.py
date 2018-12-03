@@ -101,7 +101,7 @@ def make_toy_data(type):
         n = 'toyTest.csv'
         save_path = os.path.join(os.getcwd(), '..', 'data', n)
         save_path = os.path.abspath(save_path)
-    if os.path.ispath(save_path):
+    if os.path.exists(save_path):
         return
     writer = csv.DictWriter(open(save_path, 'w'),fieldnames=cols)
     writer.writerow(dict(zip(cols, cols)))
