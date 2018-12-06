@@ -90,6 +90,26 @@ def launchSpark(smaster):
     spark = ps.sql.SparkSession(sc)
     return spark
 
+def makeRow(state):
+    if state == 0:
+        state = 1
+        return state, get_float('f1'), get_float('f2'),\
+        get_float('f3',notnull=True)
+    elif state == 1:
+        state = 2
+        return state, get_float('f1'), get_float('f2', notnull=True),\
+        get_float('f3')
+    elif state == 2:
+        state = 0
+        return state, get_float('f1', notnull=True), get_float('f2'),\
+        get_float('f3')
+
+def get_float(colname, notnull=False):
+    if notnull:
+        return colname,\
+        random.choice([random.gauss(0,1),random.gauss(0,1)])
+    return colname, random.choice([None, random.gauss(0,1)])
+
 def make_toy_data(type):
     if type == 'train':
         cols = ['Id','f1','f2','f3','Response']
@@ -101,16 +121,16 @@ def make_toy_data(type):
         n = 'toyTest.csv'
         save_path = os.path.join(os.getcwd(), '..', 'data', n)
         save_path = os.path.abspath(save_path)
+    print(save_path)
+    raw_input('checkitoutbrah')
     if os.path.exists(save_path):
         return
     writer = csv.DictWriter(open(save_path, 'w'),fieldnames=cols)
     writer.writerow(dict(zip(cols, cols)))
+    s = 0
     for i in range(150):
         idx = ('Id', i)
-        f1  = ('f1', random.choice([None, random.gauss(0,1)]))
-        f2  = ('f2', random.choice([random.gauss(0,1),\
-         random.gauss(0,1)])) # empty rows don't work well
-        f3  = ('f3', random.choice([None, random.gauss(0,1)]))
+        s, f1, f2, f3 = makeRow(state=s)
         if type == 'train':
             lbl = ('Response', random.randint(0,1))
             writer.writerow(dict([idx, f1, f2, f3, lbl]))
